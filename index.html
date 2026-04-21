@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Shift Booking</title>
+
+<style>
+body{
+  font-family:'Segoe UI',Tahoma;
+  background:linear-gradient(135deg,#eef5fb,#dfeaf5);
+  text-align:center;
+  margin:0;
+}
+
+header{
+  background:#0a4fa3;
+  color:#fff;
+  padding:15px;
+  font-size:20px;
+  font-weight:bold;
+}
+
+.container{max-width:900px;margin:auto;}
+
+.box{
+  background:#fff;
+  padding:15px;
+  margin:15px auto;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+
+.calendar{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+}
+
+.dayHeader{
+  background:#d9e6f7;
+  padding:8px;
+  font-weight:bold;
+  border-radius:6px;
+}
+
+.day{
+  background:#fff;
+  border-radius:10px;
+  padding:12px;
+  border:1px solid #ddd;
+  cursor:pointer;
+}
+
+.day.disabled{background:#eee;color:#999;}
+.day.today{border:2px solid #0a4fa3;}
+.day.weekend{background:#f8d7da;}
+.day.active{background:#0a4fa3;color:#fff;}
+
+.shift{margin:10px;padding:12px;border-radius:8px;}
+.ok{background:#28a745;color:#fff;}
+.full{background:#dc3545;color:#fff;}
+
+button{
+  margin-top:5px;
+  padding:6px 10px;
+  border:none;
+  border-radius:6px;
+  background:#0a4fa3;
+  color:#fff;
+}
+
+.counter{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+}
+</style>
+</head>
+
+<body>
+
+<header>Shift Booking – Next Month</header>
+
+<div class="box">
+<input id="name" placeholder="Name"><br>
+<input id="emp" placeholder="Employee ID"><br>
+</div>
+
+<div class="counter" id="counter"></div>
+
+<h3 id="monthTitle"></h3>
+
+<div id="calendar" class="calendar"></div>
+
+<div id="shifts"></div>
+
+<script>
+const SCRIPT_URL="https://script.google.com/macros/s/AKfycbzOliheqTjIuLMPwTotMgBm-pj198Bhklq5WAes_e5G88FuKDRH35_jnvCqyMn-MTTp5A/exec";
+const MAX=5;
+const SHIFTS=["M","A","N","O"];
+
+let data=[];
+let selectedDate=null;
+
+function updateCounter(){
+  let div=document.getElementById("counter");
+  div.innerHTML="";
+
+  SHIFTS.forEach(s=>{
+    let c=data.filter(x=>x.shift==s).length;
+    div.innerHTML+=`<div>${s}: ${c}/${MAX}</div>`;
+  });
+}
+
+function getNextMonth(){
+  let now=new Date();
+  return new Date(now.getFullYear(),now.getMonth()+1,1);
+}
+
+function buildCalendar(){
+  let cal=document.getElementById("calendar");
+  cal.innerHTML="";
+
+  let first=getNextMonth();
+  let last=new Date(first.getFullYear(),first.getMonth()+1,0);
+
+  document.getElementById("monthTitle").innerText=
+    first.toLocaleString("en",{month:"long",year:"numeric"});
+
+  const headers=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  headers.forEach(h=>{
+    cal.innerHTML+=`<div class="dayHeader">${h}</div>`;
+  });
+
+  for(let i=0;i<first.getDay();i++){
+    cal.innerHTML+="<div></div>";
+  }
+
+  let today=new Date();
+  today.setHours(0,0,0,0);
+
+  for(let d=1; d<=last.getDate(); d++){
+    let date=new Date(first.getFullYear(),first.getMonth(),d);
+    let iso=date.toISOString().split("T")[0];
+
+    let div=document.createElement("div");
+    div.className="day";
+    div.innerText=d;
+
+    if(date.getTime()==today.getTime()) div.classList.add("today");
+    if(date.getDay()==5||date.getDay()==6) div.classList.add("weekend");
+
+    if(date<today){
+      div.classList.add("disabled");
+    }else{
+      div.onclick=()=>{
+        selectedDate=iso;
+        document.querySelectorAll(".day").forEach(x=>x.classList.remove("active"));
+        div.classList.add("active");
+        renderShifts();
+      }
+    }
+
+    cal.appendChild(div);
+  }
+}
+
+function renderShifts(){
+  let div=document.getElementById("shifts");
+  div.innerHTML="<h3>Select Shift</h3>";
+
+  SHIFTS.forEach(s=>{
+    let c=data.filter(x=>x.shift==s).length;
+
+    let el=document.createElement("div");
+    el.className="shift "+(c>=MAX?"full":"ok");
+
+    if(c>=MAX){
+      el.innerText=`${s} FULL`;
+    }else{
+      el.innerHTML=`${s} (${MAX-c} left)<br>
+      <button onclick="book('${s}')">Book</button>`;
+    }
+
+    div.appendChild(el);
+  });
+}
+
+function book(shift){
+  let name=document.getElementById("name").value;
+  let emp=document.getElementById("emp").value;
+
+  let params=new URLSearchParams();
+  params.append("name",name);
+  params.append("emp",emp);
+  params.append("date",selectedDate);
+  params.append("shift",shift);
+
+  fetch(SCRIPT_URL,{method:"POST",body:params})
+  .then(r=>r.text())
+  .then(t=>{
+    alert(t);
+
+    fetch(SCRIPT_URL)
+    .then(r=>r.json())
+    .then(d=>{
+      data=d;
+      updateCounter();
+      renderShifts();
+    });
+  });
+}
+
+fetch(SCRIPT_URL)
+.then(r=>r.json())
+.then(d=>{
+  data=d;
+  buildCalendar();
+  updateCounter();
+});
+</script>
+
+</body>
+</html>
