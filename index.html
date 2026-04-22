@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Shift Booking</title>
+<title>Shift Booking System</title>
 
 <style>
 body{
@@ -20,34 +20,32 @@ header{
   font-weight:bold;
 }
 
-.container{max-width:900px;margin:auto;}
-
 .box{
   background:#fff;
   padding:15px;
   margin:15px auto;
   border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.1);
+  max-width:400px;
 }
 
 .calendar{
   display:grid;
   grid-template-columns:repeat(7,1fr);
   gap:6px;
+  max-width:800px;
+  margin:auto;
 }
 
 .dayHeader{
   background:#d9e6f7;
   padding:8px;
   font-weight:bold;
-  border-radius:6px;
 }
 
 .day{
   background:#fff;
-  border-radius:10px;
-  padding:12px;
-  border:1px solid #ddd;
+  padding:10px;
+  border-radius:8px;
   cursor:pointer;
 }
 
@@ -56,13 +54,13 @@ header{
 .day.weekend{background:#f8d7da;}
 .day.active{background:#0a4fa3;color:#fff;}
 
-.shift{margin:10px;padding:12px;border-radius:8px;}
+.shift{margin:10px;padding:10px;border-radius:8px;}
 .ok{background:#28a745;color:#fff;}
 .full{background:#dc3545;color:#fff;}
 
 button{
-  margin-top:5px;
   padding:6px 10px;
+  margin-top:5px;
   border:none;
   border-radius:6px;
   background:#0a4fa3;
@@ -82,8 +80,12 @@ button{
 <header>Shift Booking – Next Month</header>
 
 <div class="box">
-<input id="name" placeholder="Name"><br>
-<input id="emp" placeholder="Employee ID"><br>
+<input id="name" placeholder="Name"><br><br>
+<input id="emp" placeholder="Employee ID"><br><br>
+
+<button onclick="cancelBooking()">Cancel My Booking</button>
+
+<div id="myBooking"></div>
 </div>
 
 <div class="counter" id="counter"></div>
@@ -96,16 +98,17 @@ button{
 
 <script>
 const SCRIPT_URL="https://script.google.com/macros/s/AKfycbzOliheqTjIuLMPwTotMgBm-pj198Bhklq5WAes_e5G88FuKDRH35_jnvCqyMn-MTTp5A/exec";
+
 const MAX=5;
 const SHIFTS=["M","A","N","O"];
 
 let data=[];
 let selectedDate=null;
+let myBooking=null;
 
 function updateCounter(){
   let div=document.getElementById("counter");
   div.innerHTML="";
-
   SHIFTS.forEach(s=>{
     let c=data.filter(x=>x.shift==s).length;
     div.innerHTML+=`<div>${s}: ${c}/${MAX}</div>`;
@@ -156,8 +159,10 @@ function buildCalendar(){
     }else{
       div.onclick=()=>{
         selectedDate=iso;
+
         document.querySelectorAll(".day").forEach(x=>x.classList.remove("active"));
         div.classList.add("active");
+
         renderShifts();
       }
     }
@@ -166,8 +171,31 @@ function buildCalendar(){
   }
 }
 
+function checkMyBooking(emp){
+  myBooking = data.find(x=>x.emp==emp);
+}
+
 function renderShifts(){
   let div=document.getElementById("shifts");
+  let emp=document.getElementById("emp").value;
+
+  if(!emp){
+    div.innerHTML="<h3>Enter Employee ID first</h3>";
+    return;
+  }
+
+  checkMyBooking(emp);
+
+  if(myBooking){
+    document.getElementById("myBooking").innerText =
+      "Your booking: "+myBooking.shift+" on "+myBooking.date;
+
+    div.innerHTML="<h3>You already booked</h3>";
+    return;
+  }else{
+    document.getElementById("myBooking").innerText="";
+  }
+
   div.innerHTML="<h3>Select Shift</h3>";
 
   SHIFTS.forEach(s=>{
@@ -191,6 +219,11 @@ function book(shift){
   let name=document.getElementById("name").value;
   let emp=document.getElementById("emp").value;
 
+  if(!name || !emp){
+    alert("Enter all data");
+    return;
+  }
+
   let params=new URLSearchParams();
   params.append("name",name);
   params.append("emp",emp);
@@ -198,6 +231,29 @@ function book(shift){
   params.append("shift",shift);
 
   fetch(SCRIPT_URL,{method:"POST",body:params})
+  .then(r=>r.text())
+  .then(t=>{
+    alert(t);
+
+    fetch(SCRIPT_URL)
+    .then(r=>r.json())
+    .then(d=>{
+      data=d;
+      updateCounter();
+      renderShifts();
+    });
+  });
+}
+
+function cancelBooking(){
+  let emp=document.getElementById("emp").value;
+
+  if(!emp){
+    alert("Enter Employee ID");
+    return;
+  }
+
+  fetch(SCRIPT_URL+"?action=delete&emp="+emp)
   .then(r=>r.text())
   .then(t=>{
     alert(t);
