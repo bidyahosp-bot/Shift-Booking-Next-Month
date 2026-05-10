@@ -158,50 +158,87 @@ function updateCounter(){
 }
 
 function getNextMonth(){
+
   let now=new Date();
-  return new Date(now.getFullYear(),now.getMonth(),1);
+
+  return new Date(
+    now.getFullYear(),
+    now.getMonth()+1,
+    1
+  );
 }
 
 function buildCalendar(){
+
   let cal=document.getElementById("calendar");
+
   cal.innerHTML="";
 
   let first=getNextMonth();
-  let last=new Date(first.getFullYear(),first.getMonth()+1,0);
+
+  let last=new Date(
+    first.getFullYear(),
+    first.getMonth()+1,
+    0
+  );
 
   document.getElementById("monthTitle").innerText=
-    first.toLocaleString("en",{month:"long",year:"numeric"});
+    first.toLocaleString(
+      "en",
+      {month:"long",year:"numeric"}
+    );
 
-  const headers=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const headers=[
+    "Sun","Mon","Tue",
+    "Wed","Thu","Fri","Sat"
+  ];
 
   headers.forEach(h=>{
-    cal.innerHTML+=`<div class="dayHeader">${h}</div>`;
+    cal.innerHTML+=
+      `<div class="dayHeader">${h}</div>`;
   });
 
   for(let i=0;i<first.getDay();i++){
     cal.innerHTML+="<div></div>";
   }
 
-  let allowedDays=[12,13,14];
+  // السماح بالحجز فقط من 12 الى 14
+  let today=new Date();
+
+  let currentDay=today.getDate();
+
+  let bookingOpen =
+    currentDay>=12 && currentDay<=14;
 
   for(let d=1; d<=last.getDate(); d++){
 
-    let date=new Date(first.getFullYear(),first.getMonth(),d);
+    let date=new Date(
+      first.getFullYear(),
+      first.getMonth(),
+      d
+    );
+
     let iso=date.toISOString().split("T")[0];
 
     let div=document.createElement("div");
+
     div.className="day";
+
     div.innerText=d;
 
-    if(!allowedDays.includes(d)){
+    if(!bookingOpen){
+
       div.classList.add("disabled");
+
     }else{
 
       div.onclick=()=>{
 
         selectedDate=iso;
 
-        document.querySelectorAll(".day").forEach(x=>x.classList.remove("active"));
+        document
+        .querySelectorAll(".day")
+        .forEach(x=>x.classList.remove("active"));
 
         div.classList.add("active");
 
@@ -210,6 +247,13 @@ function buildCalendar(){
     }
 
     cal.appendChild(div);
+  }
+
+  // رسالة اغلاق الحجز
+  if(!bookingOpen){
+
+    document.getElementById("shifts").innerHTML=
+      "<h3>Booking allowed only from day 12 to 14 of current month</h3>";
   }
 }
 
