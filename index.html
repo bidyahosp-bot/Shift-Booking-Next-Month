@@ -375,17 +375,23 @@ function book(shift){
 
   if(!name || !emp || !reason){
 
-let sameDate = data.find(x=>
-  x.emp==emp &&
-  x.date==selectedDate
-);
+    alert("Enter all data");
 
-if(sameDate){
+    return;
+  }
 
-  alert("You already booked this date");
+  let sameDate = data.find(x=>
+    x.emp==emp &&
+    x.date==selectedDate
+  );
 
-  return;
-}
+  if(sameDate){
+
+    alert("You already booked this date");
+
+    return;
+  }
+
   let params=new URLSearchParams();
 
   params.append("name",name);
@@ -409,7 +415,6 @@ if(sameDate){
 
     alert(t);
 
-        
     fetch(SCRIPT_URL)
 
     .then(r=>r.json())
@@ -421,9 +426,11 @@ if(sameDate){
       updateCounter();
 
       renderShifts();
+
     });
 
   });
+
 }
 
 function cancelBooking(){
