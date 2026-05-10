@@ -305,7 +305,9 @@ function renderShifts(){
 
   checkMyBooking(emp);
 
-  let limit = reason=="SAL" ? 3 : 1;
+  let hasSAL = myBooking.some(x=>x.reason=="SAL");
+
+let limit = hasSAL || reason=="SAL" ? 3 : 1;
 
   if(myBooking.length >= limit){
 
@@ -373,11 +375,17 @@ function book(shift){
 
   if(!name || !emp || !reason){
 
-    alert("Enter all data");
+let sameDate = data.find(x=>
+  x.emp==emp &&
+  x.date==selectedDate
+);
 
-    return;
-  }
+if(sameDate){
 
+  alert("You already booked this date");
+
+  return;
+}
   let params=new URLSearchParams();
 
   params.append("name",name);
@@ -401,6 +409,7 @@ function book(shift){
 
     alert(t);
 
+        
     fetch(SCRIPT_URL)
 
     .then(r=>r.json())
