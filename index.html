@@ -118,12 +118,43 @@ let selectedDate=null;
 let myBooking=null;
 
 function updateCounter(){
+
   let div=document.getElementById("counter");
+
   div.innerHTML="";
+
+  let nextMonth = getNextMonth();
+
+  let month =
+    String(nextMonth.getMonth()+1).padStart(2,'0');
+
+  let year = nextMonth.getFullYear();
+
   SHIFTS.forEach(s=>{
-    let c=data.filter(x=>x.shift==s).length;
-    div.innerHTML+=`<div>${s}: ${c}/${MAX}</div>`;
+
+    let c=data.filter(x=>{
+
+      let bookingDate = new Date(x.date);
+
+      let bookingMonth =
+        String(bookingDate.getMonth()+1).padStart(2,'0');
+
+      let bookingYear =
+        bookingDate.getFullYear();
+
+      return (
+        x.shift==s &&
+        bookingMonth==month &&
+        bookingYear==year
+      );
+
+    }).length;
+
+    div.innerHTML +=
+      `<div>${s}: ${c}/${MAX}</div>`;
+
   });
+
 }
 
 function getNextMonth(){
@@ -184,10 +215,32 @@ function buildCalendar(){
 
 function checkMyBooking(emp){
 
-  myBooking = data.filter(x=>x.emp==emp);
+  let nextMonth = getNextMonth();
+
+  let month =
+    String(nextMonth.getMonth()+1).padStart(2,'0');
+
+  let year = nextMonth.getFullYear();
+
+  myBooking = data.filter(x=>{
+
+    let bookingDate = new Date(x.date);
+
+    let bookingMonth =
+      String(bookingDate.getMonth()+1).padStart(2,'0');
+
+    let bookingYear =
+      bookingDate.getFullYear();
+
+    return (
+      x.emp==emp &&
+      bookingMonth==month &&
+      bookingYear==year
+    );
+
+  });
 
 }
-
 function renderShifts(){
 
   let div=document.getElementById("shifts");
@@ -229,11 +282,26 @@ function renderShifts(){
 
   SHIFTS.forEach(s=>{
 
-    let c=data.filter(x=>
-      x.shift==s &&
-      x.date==selectedDate
-    ).length;
+   let c=data.filter(x=>{
 
+  let bookingDate = new Date(x.date);
+
+  let bookingMonth =
+    bookingDate.getMonth();
+
+  let bookingYear =
+    bookingDate.getFullYear();
+
+  let selected = new Date(selectedDate);
+
+  return (
+    x.shift==s &&
+    bookingMonth==selected.getMonth() &&
+    bookingYear==selected.getFullYear() &&
+    x.date==selectedDate
+  );
+
+}).length;
     let el=document.createElement("div");
 
     el.className="shift "+(c>=MAX?"full":"ok");
