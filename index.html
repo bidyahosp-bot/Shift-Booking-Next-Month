@@ -80,12 +80,23 @@ button{
 <header>Shift Booking – Next Month</header>
 
 <div class="box">
+
 <input id="name" placeholder="Name"><br><br>
+
 <input id="emp" placeholder="Employee ID"><br><br>
+
+<select id="reason">
+  <option value="">Select Reason</option>
+  <option value="NORMAL">Normal</option>
+  <option value="SAL">SAL</option>
+</select>
+
+<br><br>
 
 <button onclick="cancelBooking()">Cancel My Booking</button>
 
 <div id="myBooking"></div>
+
 </div>
 
 <div class="counter" id="counter"></div>
@@ -140,10 +151,10 @@ function buildCalendar(){
     cal.innerHTML+="<div></div>";
   }
 
-  let today=new Date();
-  today.setHours(0,0,0,0);
+  let allowedDays=[12,13,14];
 
   for(let d=1; d<=last.getDate(); d++){
+
     let date=new Date(first.getFullYear(),first.getMonth(),d);
     let iso=date.toISOString().split("T")[0];
 
@@ -151,16 +162,16 @@ function buildCalendar(){
     div.className="day";
     div.innerText=d;
 
-    if(date.getTime()==today.getTime()) div.classList.add("today");
-    if(date.getDay()==5||date.getDay()==6) div.classList.add("weekend");
-
-    if(date<today){
+    if(!allowedDays.includes(d)){
       div.classList.add("disabled");
     }else{
+
       div.onclick=()=>{
+
         selectedDate=iso;
 
         document.querySelectorAll(".day").forEach(x=>x.classList.remove("active"));
+
         div.classList.add("active");
 
         renderShifts();
@@ -172,41 +183,67 @@ function buildCalendar(){
 }
 
 function checkMyBooking(emp){
-  myBooking = data.find(x=>x.emp==emp);
+
+  myBooking = data.filter(x=>x.emp==emp);
+
 }
 
 function renderShifts(){
+
   let div=document.getElementById("shifts");
+
   let emp=document.getElementById("emp").value;
+
+  let reason=document.getElementById("reason").value;
 
   if(!emp){
     div.innerHTML="<h3>Enter Employee ID first</h3>";
     return;
   }
 
+  if(!reason){
+    div.innerHTML="<h3>Select Reason First</h3>";
+    return;
+  }
+
   checkMyBooking(emp);
 
-  if(myBooking){
-    document.getElementById("myBooking").innerText =
-      "Your booking: "+myBooking.shift+" on "+myBooking.date;
+  let limit = reason=="SAL" ? 3 : 1;
 
-    div.innerHTML="<h3>You already booked</h3>";
+  if(myBooking.length >= limit){
+
+    document.getElementById("myBooking").innerHTML =
+      "You already booked "+myBooking.length+" day(s)";
+
+    div.innerHTML="<h3>Booking limit reached</h3>";
+
     return;
+
   }else{
-    document.getElementById("myBooking").innerText="";
+
+    document.getElementById("myBooking").innerHTML =
+      "Booked Days: "+myBooking.length+" / "+limit;
   }
 
   div.innerHTML="<h3>Select Shift</h3>";
 
   SHIFTS.forEach(s=>{
-    let c=data.filter(x=>x.shift==s).length;
+
+    let c=data.filter(x=>
+      x.shift==s &&
+      x.date==selectedDate
+    ).length;
 
     let el=document.createElement("div");
+
     el.className="shift "+(c>=MAX?"full":"ok");
 
     if(c>=MAX){
+
       el.innerText=`${s} FULL`;
+
     }else{
+
       el.innerHTML=`${s} (${MAX-c} left)<br>
       <button onclick="book('${s}')">Book</button>`;
     }
@@ -214,34 +251,57 @@ function renderShifts(){
     div.appendChild(el);
   });
 }
-
 function book(shift){
+
   let name=document.getElementById("name").value;
+
   let emp=document.getElementById("emp").value;
 
-  if(!name || !emp){
+  let reason=document.getElementById("reason").value;
+
+  if(!name || !emp || !reason){
+
     alert("Enter all data");
+
     return;
   }
 
   let params=new URLSearchParams();
+
   params.append("name",name);
+
   params.append("emp",emp);
+
   params.append("date",selectedDate);
+
   params.append("shift",shift);
 
-  fetch(SCRIPT_URL,{method:"POST",body:params})
+  params.append("reason",reason);
+
+  fetch(SCRIPT_URL,{
+    method:"POST",
+    body:params
+  })
+
   .then(r=>r.text())
+
   .then(t=>{
+
     alert(t);
 
     fetch(SCRIPT_URL)
+
     .then(r=>r.json())
+
     .then(d=>{
+
       data=d;
+
       updateCounter();
+
       renderShifts();
     });
+
   });
 }
 
