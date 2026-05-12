@@ -93,7 +93,6 @@ button{
 <div id="salSection"
 style="display:none;margin-top:20px;">
 
-<h3>SAL Booking</h3>
 
 <h3>SAL Booking</h3>
 
@@ -232,6 +231,16 @@ document.addEventListener("change",function(e){
 
       renderShifts();
 
+      salDates=[];
+
+document.getElementById(
+  "salSelected"
+).innerHTML="";
+
+document
+.querySelectorAll("#salCalendar .day")
+.forEach(x=>x.classList.remove("active"));
+      
     });
 
   },1000);
@@ -317,6 +326,9 @@ function updateCounter(){
   SHIFTS.forEach(s=>{
 
     let c=data.filter(x=>{
+
+  // SAL لا يدخل ضمن الحد
+ 
 
       let bookingDate = new Date(x.date);
 
@@ -533,13 +545,7 @@ function renderShifts(){
     return;
   }
 
-  // SAL لا يظهر الشفتات العادية
-  if(reason=="SAL"){
-
-    div.innerHTML="";
-
-    return;
-  }
+ 
 
   div.innerHTML =
     "<h3>Select Shift</h3>";
