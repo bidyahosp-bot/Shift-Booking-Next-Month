@@ -94,19 +94,38 @@ button{
 
   <h3>SAL Booking</h3>
 
-  <select id="salDay">
-    <option value="">Select Day</option>
-  </select>
+<div id="salSection"
+style="display:none;margin-top:20px;">
 
-  <br><br>
+<h3>SAL Booking</h3>
 
-  <select id="salShift">
-    <option value="">Select Shift</option>
-    <option value="M">Morning</option>
-    <option value="A">Afternoon</option>
-    <option value="N">Night</option>
-    <option value="O">Off</option>
-  </select>
+<div id="salCalendar"
+style="
+display:grid;
+grid-template-columns:repeat(7,1fr);
+gap:5px;
+margin-top:10px;
+"></div>
+
+<br>
+
+<select id="salShift">
+  <option value="">Select Shift</option>
+  <option value="M">Morning</option>
+  <option value="A">Afternoon</option>
+  <option value="N">Night</option>
+  <option value="O">Off</option>
+</select>
+
+<br><br>
+
+<div id="salSelected"></div>
+
+<br>
+
+<button onclick="confirmSAL()">
+Confirm SAL Booking
+</button>
 
 </div>
 
@@ -135,6 +154,7 @@ const SHIFTS=["M","A","N","O"];
 let data=[];
 let selectedDate=null;
 let myBooking=null;
+  let salDates=[];
 document.addEventListener("change",function(e){
 
   if(e.target.id=="reason"){
@@ -147,7 +167,7 @@ document.addEventListener("change",function(e){
 
       sal.style.display="block";
 
-      loadSalDays();
+      loadSALCalendar();
 
     }else{
 
@@ -155,6 +175,133 @@ document.addEventListener("change",function(e){
     }
   }
 });
+  function confirmSAL(){
+
+  let name=document.getElementById("name").value;
+
+  let emp=document.getElementById("emp").value;
+
+  let shift=document.getElementById("salShift").value;
+
+  if(!name || !emp || !shift){
+
+    alert("Complete all SAL data");
+
+    return;
+  }
+
+  if(salDates.length==0){
+
+    alert("Select SAL dates");
+
+    return;
+  }
+
+  salDates.forEach(d=>{
+
+    let params=new URLSearchParams();
+
+    params.append("name",name);
+
+    params.append("emp",emp);
+
+    params.append("date",d);
+
+    params.append("shift",shift);
+
+    params.append("reason","SAL");
+
+    fetch(SCRIPT_URL,{
+      method:"POST",
+      body:params
+    })
+    .then(r=>r.text())
+    .then(t=>console.log(t));
+
+  });
+
+  alert("SAL booking submitted");
+
+  setTimeout(()=>{
+
+    fetch(SCRIPT_URL)
+    .then(r=>r.json())
+    .then(d=>{
+
+      data=d;
+
+      updateCounter();
+
+      renderShifts();
+
+    });
+
+  },1000);
+}
+ function loadSALCalendar(){
+
+  let cal=document.getElementById("salCalendar");
+
+  cal.innerHTML="";
+
+  salDates=[];
+
+  let first=getNextMonth();
+
+  let last=new Date(
+    first.getFullYear(),
+    first.getMonth()+1,
+    0
+  );
+
+  for(let d=1; d<=last.getDate(); d++){
+
+    let date=new Date(
+      first.getFullYear(),
+      first.getMonth(),
+      d
+    );
+
+    let iso=date.toISOString().split("T")[0];
+
+    let div=document.createElement("div");
+
+    div.className="day";
+
+    div.innerText=d;
+
+    div.onclick=()=>{
+
+      if(salDates.includes(iso)){
+
+        salDates =
+          salDates.filter(x=>x!=iso);
+
+        div.classList.remove("active");
+
+      }else{
+
+        if(salDates.length>=3){
+
+          alert("Maximum 3 SAL days");
+
+          return;
+        }
+
+        salDates.push(iso);
+
+        div.classList.add("active");
+      }
+
+      document.getElementById(
+        "salSelected"
+      ).innerHTML =
+        "Selected: "+salDates.join(" , ");
+    };
+
+    cal.appendChild(div);
+  }
+} 
  function loadSalDays(){
 
   let select=document.getElementById("salDay");
