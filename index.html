@@ -514,79 +514,105 @@ function renderShifts(){
   let emp=document.getElementById("emp").value;
 
   let reason=document.getElementById("reason").value;
-if(reason=="SAL"){
 
-  selectedDate =
-    document.getElementById("salDay").value;
-
-  shift =
-    document.getElementById("salShift").value;
-
-  if(!selectedDate || !shift){
-
-    alert("Select SAL day and shift");
-
-    return;
-  }
-}
   if(!emp){
-    div.innerHTML="<h3>Enter Employee ID first</h3>";
-    return;
-  }
 
-  if(!reason){
-    div.innerHTML="<h3>Select Reason First</h3>";
+    div.innerHTML =
+      "<h3>Enter Employee ID first</h3>";
+
     return;
   }
 
   checkMyBooking(emp);
 
-  let hasSAL = myBooking.some(x=>x.reason=="SAL");
+  // فصل الحجوزات
+  let normalBookings =
+    myBooking.filter(x=>
+      x.reason!="SAL"
+    ).length;
 
-let limit = hasSAL || reason=="SAL" ? 3 : 1;
+  let salBookings =
+    myBooking.filter(x=>
+      x.reason=="SAL"
+    ).length;
 
-  if(myBooking.length >= limit){
+  // عرض العدادات
+  if(reason=="SAL"){
 
-    document.getElementById("myBooking").innerHTML =
-      "You already booked "+myBooking.length+" day(s)";
-
-    div.innerHTML="<h3>Booking limit reached</h3>";
-
-    return;
+    document.getElementById(
+      "myBooking"
+    ).innerHTML =
+      `SAL Days: ${salBookings}/3`;
 
   }else{
 
-    document.getElementById("myBooking").innerHTML =
-      "Booked Days: "+myBooking.length+" / "+limit;
+    document.getElementById(
+      "myBooking"
+    ).innerHTML =
+      `Normal Booking: ${normalBookings}/1`;
   }
 
-  div.innerHTML="<h3>Select Shift</h3>";
+  // NORMAL فقط
+  if(
+    reason!="SAL" &&
+    normalBookings>=1
+  ){
+
+    div.innerHTML =
+      "<h3>Normal booking already used</h3>";
+
+    return;
+  }
+
+  // SAL لا يظهر الشفتات العادية
+  if(reason=="SAL"){
+
+    div.innerHTML="";
+
+    return;
+  }
+
+  div.innerHTML =
+    "<h3>Select Shift</h3>";
 
   SHIFTS.forEach(s=>{
 
-   let c=data.filter(x=>{
+    let c=data.filter(x=>{
 
-  let bookingDate = new Date(x.date);
+      let bookingDate =
+        new Date(x.date);
 
-  let bookingMonth =
-    bookingDate.getMonth();
+      let bookingMonth =
+        bookingDate.getMonth();
 
-  let bookingYear =
-    bookingDate.getFullYear();
+      let bookingYear =
+        bookingDate.getFullYear();
 
-  let selected = new Date(selectedDate);
+      let selected =
+        new Date(selectedDate);
 
-  return (
-    x.shift==s &&
-    bookingMonth==selected.getMonth() &&
-    bookingYear==selected.getFullYear() &&
-    x.date==selectedDate
-  );
+      return (
 
-}).length;
+        x.shift==s &&
+
+        x.reason!="SAL" &&
+
+        bookingMonth==
+        selected.getMonth() &&
+
+        bookingYear==
+        selected.getFullYear() &&
+
+        x.date==selectedDate
+
+      );
+
+    }).length;
+
     let el=document.createElement("div");
 
-    el.className="shift "+(c>=MAX?"full":"ok");
+    el.className =
+      "shift "+(c>=MAX?"full":"ok");
 
     if(c>=MAX){
 
@@ -594,12 +620,17 @@ let limit = hasSAL || reason=="SAL" ? 3 : 1;
 
     }else{
 
-      el.innerHTML=`${s} (${MAX-c} left)<br>
-      <button onclick="book('${s}')">Book</button>`;
+      el.innerHTML=
+      `${s} (${MAX-c} left)<br>
+      <button onclick="book('${s}')">
+      Book
+      </button>`;
     }
 
     div.appendChild(el);
+
   });
+
 }
 function book(shift){
 
