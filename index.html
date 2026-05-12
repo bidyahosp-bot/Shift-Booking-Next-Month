@@ -86,10 +86,29 @@ button{
 <input id="emp" placeholder="Employee ID"><br><br>
 
 <select id="reason">
-  <option value="">Select Reason</option>
-  <option value="NORMAL">Normal</option>
-  <option value="SAL">SAL</option>
+  <option value="NORMAL">Normal Booking</option>
+  <option value="SAL">SAL Booking</option>
 </select>
+
+<div id="salSection" style="display:none;margin-top:15px;">
+
+  <h3>SAL Booking</h3>
+
+  <select id="salDay">
+    <option value="">Select Day</option>
+  </select>
+
+  <br><br>
+
+  <select id="salShift">
+    <option value="">Select Shift</option>
+    <option value="M">Morning</option>
+    <option value="A">Afternoon</option>
+    <option value="N">Night</option>
+    <option value="O">Off</option>
+  </select>
+
+</div>
 
 <br><br>
 
@@ -116,7 +135,57 @@ const SHIFTS=["M","A","N","O"];
 let data=[];
 let selectedDate=null;
 let myBooking=null;
+document.addEventListener("change",function(e){
 
+  if(e.target.id=="reason"){
+
+    let val=e.target.value;
+
+    let sal=document.getElementById("salSection");
+
+    if(val=="SAL"){
+
+      sal.style.display="block";
+
+      loadSalDays();
+
+    }else{
+
+      sal.style.display="none";
+    }
+  }
+});
+ function loadSalDays(){
+
+  let select=document.getElementById("salDay");
+
+  select.innerHTML=
+    '<option value="">Select Day</option>';
+
+  let first=getNextMonth();
+
+  let last=new Date(
+    first.getFullYear(),
+    first.getMonth()+1,
+    0
+  );
+
+  for(let d=1; d<=last.getDate(); d++){
+
+    let date=new Date(
+      first.getFullYear(),
+      first.getMonth(),
+      d
+    );
+
+    let iso=date.toISOString().split("T")[0];
+
+    select.innerHTML +=
+      `<option value="${iso}">
+        ${d}
+      </option>`;
+  }
+} 
 function updateCounter(){
 
   let div=document.getElementById("counter");
@@ -298,7 +367,21 @@ function renderShifts(){
   let emp=document.getElementById("emp").value;
 
   let reason=document.getElementById("reason").value;
+if(reason=="SAL"){
 
+  selectedDate =
+    document.getElementById("salDay").value;
+
+  shift =
+    document.getElementById("salShift").value;
+
+  if(!selectedDate || !shift){
+
+    alert("Select SAL day and shift");
+
+    return;
+  }
+}
   if(!emp){
     div.innerHTML="<h3>Enter Employee ID first</h3>";
     return;
