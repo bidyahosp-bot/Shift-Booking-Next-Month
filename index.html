@@ -90,12 +90,10 @@ button{
   <option value="SAL">SAL Booking</option>
 </select>
 
-<div id="salSection" style="display:none;margin-top:15px;">
-
-  <h3>SAL Booking</h3>
-
 <div id="salSection"
 style="display:none;margin-top:20px;">
+
+<h3>SAL Booking</h3>
 
 <h3>SAL Booking</h3>
 
@@ -302,37 +300,7 @@ document.addEventListener("change",function(e){
     cal.appendChild(div);
   }
 } 
- function loadSalDays(){
 
-  let select=document.getElementById("salDay");
-
-  select.innerHTML=
-    '<option value="">Select Day</option>';
-
-  let first=getNextMonth();
-
-  let last=new Date(
-    first.getFullYear(),
-    first.getMonth()+1,
-    0
-  );
-
-  for(let d=1; d<=last.getDate(); d++){
-
-    let date=new Date(
-      first.getFullYear(),
-      first.getMonth(),
-      d
-    );
-
-    let iso=date.toISOString().split("T")[0];
-
-    select.innerHTML +=
-      `<option value="${iso}">
-        ${d}
-      </option>`;
-  }
-} 
 function updateCounter(){
 
   let div=document.getElementById("counter");
@@ -359,10 +327,11 @@ function updateCounter(){
         bookingDate.getFullYear();
 
       return (
-        x.shift==s &&
-        bookingMonth==month &&
-        bookingYear==year
-      );
+  x.shift==s &&
+  x.reason!="SAL" &&
+  bookingMonth==month &&
+  bookingYear==year
+);
 
     }).length;
 
