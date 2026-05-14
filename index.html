@@ -269,6 +269,8 @@ function buildCalendar(){
       offDates.push(iso);
 
       div.classList.add("active");
+      
+      offMode=true;
     }
 
   }else{
@@ -362,15 +364,17 @@ OFF Days: ${salBookings}/3
 `;
 
   // NORMAL فقط
-  if(normalBookings>=1)
-  {
+ if(
+  normalBookings>=1 &&
+  !offMode
+)
+{
 
-    div.innerHTML =
-      "<h3>Normal booking already used</h3>";
+  div.innerHTML =
+    "<h3>Normal booking already used</h3>";
 
-    return;
-  }
-
+  return;
+}
  
 
   div.innerHTML =
@@ -435,7 +439,29 @@ OFF Days: ${salBookings}/3
 }
 function book(shift){
 
-offMode = (shift=="O");
+if(shift=="O"){
+
+  offMode=true;
+
+}else{
+
+  offMode=false;
+}
+  // حد OFF = 3 أيام فقط
+let offBookings =
+  myBooking.filter(x=>
+    x.reason=="OFF"
+  ).length;
+
+if(
+  shift=="O" &&
+  (offBookings + offDates.length) > 3
+){
+
+  alert("Maximum 3 OFF days only");
+
+  return;
+}
   let name=document.getElementById("name").value;
 
   let emp=document.getElementById("emp").value;
@@ -457,30 +483,58 @@ offMode = (shift=="O");
       return;
     }
 
-    offDates.forEach(d=>{
 
-      let params=new URLSearchParams();
 
-      params.append("name",name);
+   Promise.all(
 
-      params.append("emp",emp);
+  offDates.map(d=>{
 
-      params.append("date",d);
+    let params=new URLSearchParams();
 
-      params.append("shift","O");
+    params.append("name",name);
 
-      params.append("reason","OFF");
+    params.append("emp",emp);
 
-      fetch(SCRIPT_URL,{
-        method:"POST",
-        body:params
-      });
+    params.append("date",d);
 
+    params.append("shift","O");
+
+    params.append("reason","OFF");
+
+    return fetch(SCRIPT_URL,{
+      method:"POST",
+      body:params
     });
 
-    alert("OFF booking submitted");
+  })
+
+).then(()=>{
+
+  alert("OFF booking submitted");
+
+  fetch(SCRIPT_URL)
+  .then(r=>r.json())
+  .then(d=>{
+
+    data=d;
+
+    checkMyBooking(emp);
+
+    updateCounter();
+
+    renderShifts();
 
     offDates=[];
+
+    document
+    .querySelectorAll(".day")
+    .forEach(x=>
+      x.classList.remove("active")
+    );
+
+  });
+
+});
 
     document
     .querySelectorAll(".day")
