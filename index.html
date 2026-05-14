@@ -85,45 +85,8 @@ button{
 
 <input id="emp" placeholder="Employee ID"><br><br>
 
-<select id="reason">
-  <option value="NORMAL">Normal Booking</option>
-  <option value="OFF">OFF Booking</option>
-</select>
-
-<div id="salSection"
-style="display:none;margin-top:20px;">
 
 
-<h3>OFF Booking</h3>
-
-<div id="salCalendar"
-style="
-display:grid;
-grid-template-columns:repeat(7,1fr);
-gap:5px;
-margin-top:10px;
-"></div>
-
-<br>
-
-<select id="salShift">
-  <option value="">Select Shift</option>
-  <option value="M">Morning</option>
-  <option value="A">Afternoon</option>
-  <option value="N">Night</option>
-  <option value="O">Off</option>
-</select>
-
-<br><br>
-
-<div id="salSelected"></div>
-
-<br>
-
-<button onclick="confirmOFF()">
-Confirm OFF Booking
-</button>
-</div>
 
 <br><br>
 
@@ -150,165 +113,11 @@ const SHIFTS=["M","A","N","O"];
 let data=[];
 let selectedDate=null;
 let myBooking=null;
-  let salDates=[];
-document.addEventListener("change",function(e){
+  let offDates=[];
+let offMode=false;
 
-  if(e.target.id=="reason"){
-
-    let val=e.target.value;
-
-    let sal=document.getElementById("salSection");
-
-    if(val=="OFF"){
-
-      sal.style.display="block";
-
-      loadSALCalendar();
-
-    }else{
-
-      sal.style.display="none";
-    }
-  }
-});
-  function confirmOFF(){
-
-  let name=document.getElementById("name").value;
-
-  let emp=document.getElementById("emp").value;
-
-  let shift=document.getElementById("salShift").value;
-
-  if(!name || !emp || !shift){
-
-    alert("Complete all OFF data");
-
-    return;
-  }
-
-  if(salDates.length==0){
-
-   alert("Select OFF dates");
-
-    return;
-  }
-
-  salDates.forEach(d=>{
-
-    let params=new URLSearchParams();
-
-    params.append("name",name);
-
-    params.append("emp",emp);
-
-    params.append("date",d);
-
-    params.append("shift",shift);
-
-    params.append("reason","OFF");
-
-    fetch(SCRIPT_URL,{
-      method:"POST",
-      body:params
-    })
-    .then(r=>r.text())
-    .then(t=>console.log(t));
-
-  });
-
-  alert("OFF booking submitted");
-
-  setTimeout(()=>{
-
-    fetch(SCRIPT_URL)
-    .then(r=>r.json())
-    .then(d=>{
-
-      data=d;
-
-      updateCounter();
-
-      renderShifts();
-
-      salDates=[];
-
-document.getElementById(
-  "salSelected"
-).innerHTML="";
-
-document
-.querySelectorAll("#salCalendar .day")
-.forEach(x=>x.classList.remove("active"));
-      
-    });
-
-  },1000);
-}
- function loadSALCalendar(){
-
-  let cal=document.getElementById("salCalendar");
-
-  cal.innerHTML="";
-
-  salDates=[];
-
-  let first=getNextMonth();
-
-  let last=new Date(
-    first.getFullYear(),
-    first.getMonth()+1,
-    0
-  );
-
-  for(let d=1; d<=last.getDate(); d++){
-
-    let date=new Date(
-      first.getFullYear(),
-      first.getMonth(),
-      d
-    );
-
-    let iso=date.toISOString().split("T")[0];
-
-    let div=document.createElement("div");
-
-    div.className="day";
-
-    div.innerText=d;
-
-    div.onclick=()=>{
-
-      if(salDates.includes(iso)){
-
-        salDates =
-          salDates.filter(x=>x!=iso);
-
-        div.classList.remove("active");
-
-      }else{
-
-        if(salDates.length>=3){
-
-          alert("Maximum 3 OFF days");
-
-          return;
-        }
-
-        salDates.push(iso);
-
-        div.classList.add("active");
-      }
-
-      document.getElementById(
-        "salSelected"
-      ).innerHTML =
-        "Selected: "+salDates.join(" , ");
-    };
-
-    cal.appendChild(div);
-  }
-} 
-
+  
+ 
 function updateCounter(){
 
   let div=document.getElementById("counter");
@@ -438,16 +247,43 @@ function buildCalendar(){
 
       div.onclick=()=>{
 
-        selectedDate=iso;
+  // إذا مختار OFF
+  if(offMode){
 
-        document
-        .querySelectorAll(".day")
-        .forEach(x=>x.classList.remove("active"));
+    if(offDates.includes(iso)){
 
-        div.classList.add("active");
+      offDates =
+        offDates.filter(x=>x!=iso);
 
-        renderShifts();
-      };
+      div.classList.remove("active");
+
+    }else{
+
+      if(offDates.length>=3){
+
+        alert("Maximum 3 OFF days");
+
+        return;
+      }
+
+      offDates.push(iso);
+
+      div.classList.add("active");
+    }
+
+  }else{
+
+    selectedDate=iso;
+
+    document
+    .querySelectorAll(".day")
+    .forEach(x=>x.classList.remove("active"));
+
+    div.classList.add("active");
+  }
+
+  renderShifts();
+};
     }
 
     cal.appendChild(div);
@@ -493,7 +329,7 @@ function renderShifts(){
 
   let emp=document.getElementById("emp").value;
 
-  let reason=document.getElementById("reason").value;
+  
 
   if(!emp){
 
@@ -517,26 +353,17 @@ function renderShifts(){
   ).length;
 
   // عرض العدادات
-if(reason=="OFF"){
-
-  document.getElementById(
-    "myBooking"
-  ).innerHTML =
-    `OFF Days: ${salBookings}/3`;
-
-}else{
-
-    document.getElementById(
-      "myBooking"
-    ).innerHTML =
-      `Normal Booking: ${normalBookings}/1`;
-  }
+document.getElementById(
+  "myBooking"
+).innerHTML = `
+Normal: ${normalBookings}/1
+<br>
+OFF Days: ${salBookings}/3
+`;
 
   // NORMAL فقط
-  if(
-    reason!="OFF" &&
-    normalBookings>=1
-  ){
+  if(normalBookings>=1)
+  {
 
     div.innerHTML =
       "<h3>Normal booking already used</h3>";
@@ -608,19 +435,61 @@ if(reason=="OFF"){
 }
 function book(shift){
 
+offMode = (shift=="O");
   let name=document.getElementById("name").value;
 
   let emp=document.getElementById("emp").value;
 
-  let reason=document.getElementById("reason").value;
-
-  if(!name || !emp || !reason){
+  if(!name || !emp){
 
     alert("Enter all data");
 
     return;
   }
 
+  // OFF متعدد الأيام
+  if(shift=="O"){
+
+    if(offDates.length==0){
+
+      alert("Select OFF dates");
+
+      return;
+    }
+
+    offDates.forEach(d=>{
+
+      let params=new URLSearchParams();
+
+      params.append("name",name);
+
+      params.append("emp",emp);
+
+      params.append("date",d);
+
+      params.append("shift","O");
+
+      params.append("reason","OFF");
+
+      fetch(SCRIPT_URL,{
+        method:"POST",
+        body:params
+      });
+
+    });
+
+    alert("OFF booking submitted");
+
+    offDates=[];
+
+    document
+    .querySelectorAll(".day")
+    .forEach(x=>x.classList.remove("active"));
+
+    return;
+  }
+
+  // الحجوزات العادية
   let sameDate = data.find(x=>
     x.emp==emp &&
     x.date==selectedDate
@@ -643,7 +512,7 @@ function book(shift){
 
   params.append("shift",shift);
 
-  params.append("reason",reason);
+  params.append("reason","NORMAL");
 
   fetch(SCRIPT_URL,{
     method:"POST",
