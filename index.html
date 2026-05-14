@@ -45,8 +45,31 @@ header{
 .day{
   background:#fff;
   padding:10px;
-  border-radius:8px;
+  border-radius:10px;
   cursor:pointer;
+  transition:0.25s;
+  border:2px solid transparent;
+  box-shadow:0 2px 6px rgba(0,0,0,0.08);
+}
+
+.day:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 14px rgba(10,79,163,0.25);
+  border-color:#0a4fa3;
+}
+
+.day.active{
+  background:#0a4fa3;
+  color:#fff;
+  border-color:#0a4fa3;
+  box-shadow:0 6px 16px rgba(10,79,163,0.35);
+}
+
+.day.booked{
+  background:#0a4fa3;
+  color:#fff;
+  border-color:#0a4fa3;
+  box-shadow:0 6px 16px rgba(10,79,163,0.35);
 }
 
 .day.disabled{background:#eee;color:#999;}
@@ -231,7 +254,24 @@ function buildCalendar(){
     div.className="day";
 
     div.innerText=d;
+// تثبيت الأيام المحجوزة للموظف
+let emp=document.getElementById("emp").value;
 
+if(emp){
+
+  let booked=data.find(x=>
+    x.emp==emp &&
+    x.date==iso
+  );
+
+ if(booked){
+
+  div.classList.add("booked");
+
+  // منع الضغط على الأيام المحجوزة
+  div.style.pointerEvents="none";
+}
+}
     // شكل الأيام المغلقة
     if(!bookingOpen){
 
@@ -515,9 +555,11 @@ if(
   fetch(SCRIPT_URL)
   .then(r=>r.json())
   .then(d=>{
-
+    
     data=d;
-
+    
+     buildCalendar();
+    
     checkMyBooking(emp);
 
     updateCounter();
@@ -526,11 +568,7 @@ if(
 
     offDates=[];
 
-    document
-    .querySelectorAll(".day")
-    .forEach(x=>
-      x.classList.remove("active")
-    );
+
 
   });
 
@@ -585,12 +623,13 @@ if(
 
     .then(d=>{
 
-      data=d;
+     data=d;
 
-      updateCounter();
+buildCalendar();
 
-      renderShifts();
+updateCounter();
 
+renderShifts();
     });
 
   });
