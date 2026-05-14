@@ -181,14 +181,14 @@ document.addEventListener("change",function(e){
 
   if(!name || !emp || !shift){
 
-    alert("Complete all SAL data");
+    alert("Complete all OFF data");
 
     return;
   }
 
   if(salDates.length==0){
 
-    alert("Select SAL dates");
+   alert("Select OFF dates");
 
     return;
   }
@@ -216,7 +216,7 @@ document.addEventListener("change",function(e){
 
   });
 
-  alert("SAL booking submitted");
+  alert("OFF booking submitted");
 
   setTimeout(()=>{
 
@@ -289,7 +289,7 @@ document
 
         if(salDates.length>=3){
 
-          alert("Maximum 3 SAL days");
+          alert("Maximum 3 OFF days");
 
           return;
         }
@@ -512,19 +512,19 @@ function renderShifts(){
     ).length;
 
   let salBookings =
-    myBooking.filter(x=>
-      x.reason!="OFF"
-    ).length;
+  myBooking.filter(x=>
+    x.reason=="OFF"
+  ).length;
 
   // عرض العدادات
- x.reason=="OFF"{
+if(reason=="OFF"){
 
-    document.getElementById(
-      "myBooking"
-    ).innerHTML =
-      `SAL Days: ${salBookings}/3`;
+  document.getElementById(
+    "myBooking"
+  ).innerHTML =
+    `OFF Days: ${salBookings}/3`;
 
-  }else{
+}else{
 
     document.getElementById(
       "myBooking"
