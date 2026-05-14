@@ -87,14 +87,14 @@ button{
 
 <select id="reason">
   <option value="NORMAL">Normal Booking</option>
-  <option value="SAL">SAL Booking</option>
+  <option value="OFF">OFF Booking</option>
 </select>
 
 <div id="salSection"
 style="display:none;margin-top:20px;">
 
 
-<h3>SAL Booking</h3>
+<h3>OFF Booking</h3>
 
 <div id="salCalendar"
 style="
@@ -120,10 +120,9 @@ margin-top:10px;
 
 <br>
 
-<button onclick="confirmSAL()">
-Confirm SAL Booking
+<button onclick="confirmOFF()">
+Confirm OFF Booking
 </button>
-
 </div>
 
 <br><br>
@@ -160,7 +159,7 @@ document.addEventListener("change",function(e){
 
     let sal=document.getElementById("salSection");
 
-    if(val=="SAL"){
+    if(val=="OFF"){
 
       sal.style.display="block";
 
@@ -172,7 +171,7 @@ document.addEventListener("change",function(e){
     }
   }
 });
-  function confirmSAL(){
+  function confirmOFF(){
 
   let name=document.getElementById("name").value;
 
@@ -206,7 +205,7 @@ document.addEventListener("change",function(e){
 
     params.append("shift",shift);
 
-    params.append("reason","SAL");
+    params.append("reason","OFF");
 
     fetch(SCRIPT_URL,{
       method:"POST",
@@ -340,7 +339,7 @@ function updateCounter(){
 
       return (
   x.shift==s &&
-  x.reason!="SAL" &&
+  x.reason!="OFF" &&
   bookingMonth==month &&
   bookingYear==year
 );
@@ -509,16 +508,16 @@ function renderShifts(){
   // فصل الحجوزات
   let normalBookings =
     myBooking.filter(x=>
-      x.reason!="SAL"
+      x.reason!="OFF"
     ).length;
 
   let salBookings =
     myBooking.filter(x=>
-      x.reason=="SAL"
+      x.reason!="OFF"
     ).length;
 
   // عرض العدادات
-  if(reason=="SAL"){
+ x.reason=="OFF"{
 
     document.getElementById(
       "myBooking"
@@ -535,7 +534,7 @@ function renderShifts(){
 
   // NORMAL فقط
   if(
-    reason!="SAL" &&
+    reason!="OFF" &&
     normalBookings>=1
   ){
 
@@ -570,7 +569,7 @@ function renderShifts(){
 
         x.shift==s &&
 
-        x.reason!="SAL" &&
+        x.reason!="OFF" &&
 
         bookingMonth==
         selected.getMonth() &&
