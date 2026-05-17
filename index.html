@@ -319,10 +319,7 @@ if(emp){
 
     selectedDate=iso;
 
-    document
-    .querySelectorAll(".day")
-    .forEach(x=>x.classList.remove("active"));
-
+  
     div.classList.add("active");
   }
 
@@ -573,12 +570,17 @@ if(
 
   renderShifts();
 
+})
+
+.catch(err=>{
+
+  console.log(err);
+
+  alert("Error while booking");
+
 });
-
-
   });
 
-});
 
    
     return;
