@@ -269,7 +269,9 @@ if(emp){
   div.classList.add("booked");
 
   // منع الضغط على الأيام المحجوزة
+ if(booked.reason!="OFF"){
   div.style.pointerEvents="none";
+}
 }
 }
     // شكل الأيام المغلقة
@@ -554,30 +556,31 @@ if(
 
   fetch(SCRIPT_URL)
   .then(r=>r.json())
-  .then(d=>{
-    
-    data=d;
-    
-     buildCalendar();
-    
-    checkMyBooking(emp);
+.then(d=>{
 
-    updateCounter();
+  // تنظيف الأيام المختارة أولاً
+  offDates=[];
 
-    renderShifts();
+  offMode=false;
 
-    offDates=[];
+  data=d;
 
+  buildCalendar();
+
+  checkMyBooking(emp);
+
+  updateCounter();
+
+  renderShifts();
+
+});
 
 
   });
 
 });
 
-    document
-    .querySelectorAll(".day")
-    .forEach(x=>x.classList.remove("active"));
-
+   
     return;
   }
 
