@@ -588,6 +588,19 @@ if(shift=="O"){
 }
 
 
+
+let name=document.getElementById("name").value;
+
+let emp=document.getElementById("emp").value;
+
+checkMyBooking(emp);
+
+let offBookings =
+  myBooking.filter(x=>
+    x.reason=="OFF"
+  ).length;
+
+// التحقق بعد تعريف offBookings
 if(
   shift=="O" &&
   (offBookings + offDates.length) > 3
@@ -596,25 +609,6 @@ if(
   bookingInProgress=false;
 
   alert("Maximum 3 OFF days only");
-
-  return;
-}
-  let name=document.getElementById("name").value;
-
-  let emp=document.getElementById("emp").value;
-  
-checkMyBooking(emp);
-
-let offBookings =
-  myBooking.filter(x=>
-    x.reason=="OFF"
-  ).length;
-  
- if(!name || !emp){
-
-  bookingInProgress=false;
-
-  alert("Enter all data");
 
   return;
 }
@@ -680,6 +674,7 @@ bookingInProgress=false;
 
   renderShifts();
   renderDashboard();
+  bookingInProgress=false;
 
 })
 
@@ -739,7 +734,6 @@ bookingInProgress=false;
 
 bookingInProgress=false;
 
-bookingInProgress=false;
 
     fetch(SCRIPT_URL)
 
@@ -755,7 +749,8 @@ updateCounter();
 
 renderShifts();
 
- renderDashboard();     
+ renderDashboard();   
+      bookingInProgress=false;
     });
 
   });
