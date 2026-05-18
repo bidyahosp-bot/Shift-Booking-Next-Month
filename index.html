@@ -359,7 +359,7 @@ div.classList.add("active");
   if(!bookingOpen){
 
     document.getElementById("shifts").innerHTML =
-      "<h3>Booking opens from day 12 to 14 only</h3>";
+      "<h3>Booking opens from day 17 to 19 only</h3>";
   }
 }
 function checkMyBooking(emp){
@@ -407,7 +407,13 @@ function renderShifts(){
   }
 
   checkMyBooking(emp);
+if(!selectedDate && !offMode){
 
+  document.getElementById("shifts").innerHTML =
+    "<h3>Select a date first</h3>";
+
+  return;
+}
   // فصل الحجوزات
   let normalBookings =
     myBooking.filter(x=>
@@ -592,7 +598,14 @@ if(shift=="O"){
 let name=document.getElementById("name").value;
 
 let emp=document.getElementById("emp").value;
+if(!name || !emp){
 
+  bookingInProgress=false;
+
+  alert("Enter all data");
+
+  return;
+}
 checkMyBooking(emp);
 
 let offBookings =
