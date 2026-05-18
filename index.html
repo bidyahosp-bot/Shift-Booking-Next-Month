@@ -596,6 +596,8 @@ if(
   (offBookings + offDates.length) > 3
 ){
 
+  bookingInProgress=false;
+
   alert("Maximum 3 OFF days only");
 
   return;
@@ -604,22 +606,26 @@ if(
 
   let emp=document.getElementById("emp").value;
 
-  if(!name || !emp){
+ if(!name || !emp){
 
-    alert("Enter all data");
+  bookingInProgress=false;
 
-    return;
-  }
+  alert("Enter all data");
+
+  return;
+}
 
   // OFF متعدد الأيام
   if(shift=="O"){
 
     if(offDates.length==0){
 
-      alert("Select OFF dates");
+  bookingInProgress=false;
 
-      return;
-    }
+  alert("Select OFF dates");
+
+  return;
+}
 
 
 
@@ -698,10 +704,12 @@ bookingInProgress=false;
 
   if(sameDate){
 
-    alert("You already booked this date");
+  bookingInProgress=false;
 
-    return;
-  }
+  alert("You already booked this date");
+
+  return;
+}
 
   let params=new URLSearchParams();
 
