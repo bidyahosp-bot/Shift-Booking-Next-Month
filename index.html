@@ -107,7 +107,16 @@ button{
 <input id="name" placeholder="Name"><br><br>
 
 <input id="emp" placeholder="Employee ID"><br><br>
+<script>
+document.getElementById("emp")
+.addEventListener("input",()=>{
 
+  buildCalendar();
+
+  renderShifts();
+renderDashboard();
+});
+</script>
 
 
 
@@ -126,7 +135,13 @@ button{
 <div id="calendar" class="calendar"></div>
 
 <div id="shifts"></div>
+<div class="box">
 
+<h3>My Bookings</h3>
+
+<div id="dashboard"></div>
+
+</div>
 <script>
 const SCRIPT_URL="https://script.google.com/macros/s/AKfycbzOliheqTjIuLMPwTotMgBm-pj198Bhklq5WAes_e5G88FuKDRH35_jnvCqyMn-MTTp5A/exec";
 
@@ -138,7 +153,7 @@ let selectedDate=null;
 let myBooking=null;
   let offDates=[];
 let offMode=false;
-
+let bookingInProgress=false;
   
  
 function updateCounter(){
@@ -476,8 +491,62 @@ OFF Days: ${salBookings}/3
   });
 
 }
+  function renderDashboard(){
+
+  let emp=document.getElementById("emp").value;
+
+  let div=document.getElementById("dashboard");
+
+  if(!emp){
+
+    div.innerHTML="";
+
+    return;
+  }
+
+  checkMyBooking(emp);
+
+  if(myBooking.length==0){
+
+    div.innerHTML=
+      "<p>No bookings</p>";
+
+    return;
+  }
+
+  div.innerHTML="";
+
+  myBooking.forEach(x=>{
+
+    div.innerHTML += `
+    <div style="
+      background:#f4f7fb;
+      margin:8px;
+      padding:10px;
+      border-radius:10px;
+    ">
+
+    <b>${x.date}</b>
+    <br>
+
+    Shift: ${x.shift}
+
+    <br>
+
+    Type: ${x.reason}
+
+    </div>
+    `;
+  });
+
+}
 function book(shift){
 
+  if(bookingInProgress){
+  return;
+}
+
+bookingInProgress=true;
 if(shift=="O"){
 
   offMode=true;
@@ -549,7 +618,9 @@ if(
 
 ).then(()=>{
 
-  alert("OFF booking submitted");
+ alert("OFF booking submitted");
+
+bookingInProgress=false;
 
   fetch(SCRIPT_URL)
   .then(r=>r.json())
@@ -569,11 +640,14 @@ if(
   updateCounter();
 
   renderShifts();
+  renderDashboard();
 
 })
 
 .catch(err=>{
 
+  bookingInProgress=false;
+  
   console.log(err);
 
   alert("Error while booking");
@@ -622,6 +696,8 @@ if(
 
     alert(t);
 
+bookingInProgress=false;
+
     fetch(SCRIPT_URL)
 
     .then(r=>r.json())
@@ -635,6 +711,8 @@ buildCalendar();
 updateCounter();
 
 renderShifts();
+
+ renderDashboard();     
     });
 
   });
@@ -658,8 +736,10 @@ function cancelBooking(){
     .then(r=>r.json())
     .then(d=>{
       data=d;
+      buildCalendar();
       updateCounter();
       renderShifts();
+      renderDashboard();
     });
   });
 }
