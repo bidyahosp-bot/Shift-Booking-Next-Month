@@ -340,10 +340,13 @@ if(emp){
 
   }else{
 
-    selectedDate=iso;
+   selectedDate=iso;
 
-  
-    div.classList.add("active");
+document
+.querySelectorAll(".day")
+.forEach(x=>x.classList.remove("active"));
+
+div.classList.add("active");
   }
 
   renderShifts();
@@ -583,13 +586,7 @@ if(shift=="O"){
 
   offMode=false;
 }
-  // حد OFF = 3 أيام فقط
-checkMyBooking(emp);
 
-let offBookings =
-  myBooking.filter(x=>
-    x.reason=="OFF"
-  ).length;
 
 if(
   shift=="O" &&
@@ -605,7 +602,14 @@ if(
   let name=document.getElementById("name").value;
 
   let emp=document.getElementById("emp").value;
+  
+checkMyBooking(emp);
 
+let offBookings =
+  myBooking.filter(x=>
+    x.reason=="OFF"
+  ).length;
+  
  if(!name || !emp){
 
   bookingInProgress=false;
@@ -656,7 +660,6 @@ if(
 
 bookingInProgress=false;
 
-bookingInProgress=false;
 
   fetch(SCRIPT_URL)
   .then(r=>r.json())
